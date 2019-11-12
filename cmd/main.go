@@ -13,6 +13,9 @@ func main() {
 
 	outputs := strings.Split(os.Getenv("OUTPUTS"), ",")
 	contentTypes := strings.Split(os.Getenv("OUTPUT_CONTENT_TYPES"), ",")
+	if len(outputs) != len(contentTypes) {
+		panic(fmt.Sprintf("OUTPUTS and OUTPUT_CONTENT_TYPES lists should be of the same size. %d != %d", len(outputs), len(contentTypes)))
+	}
 
 	s, err := pkg.NewSource(outputs, contentTypes)
 	if err != nil {
