@@ -12,22 +12,32 @@ ko publish github.com/projectriff-samples/http-source/cmd
 
 This will publish an image whose coordinates should be noted down for further use, `<image>` below.
 
+== Configuration
+The source expects the following environment variables when running:
+
+* `OUTPUTS` is a comma separated list of mappings, in the form `<path>=<gateway>/<topic>` where `<path>` is a
+url prefix that will be matched against incoming http requests. See golang's https://golang.org/pkg/net/http/#ServeMux[ServerMux]
+documentation for details.
+* `OUTPUT_CONTENT_TYPES` is a comma separated list (same size as `OUTPUTS`) indicating the expected
+content-type of each stream.
+
 == Using with riff
 One way to use this source is to create a container out of the image
 coordinates and create a core[https://projectriff.io/docs/v0.5/runtimes/core]
 or knative[https://projectriff.io/docs/v0.5/runtimes/knative] deployer. Here's an example:
 
-Assuming a "in" stream exists and has already been created:
+Assuming both "orders" and "quotes" streams exist and have already been created:
 [source, bash]
 ----
 riff streaming stream list
 
 riff streaming stream list
 NAME     TOPIC            GATEWAY                                  PROVIDER                  CONTENT-TYPE       STATUS   AGE
-in       default_in       franz-kafka-liiklus-bqgp2.default:6565   franz-kafka-provisioner   application/json   Ready    8d
+orders   default_orders   franz-kafka-gateway-bqgp2.default:6565   franz-kafka-provisioner   application/json   Ready    8d
+quotes   default_quotes   franz-kafka-gateway-bqgp2.default:6565   franz-kafka-provisioner   text/xml           Ready    8d
 ----
 
-Note the _gateway_, _topic_ and _content-type_ of the stream.
+Note the _gateway_, _topic_ and _content-type_ of each stream, this will be used later.
 
 Create a container out of the image created above:
 [source, bash]
@@ -39,12 +49,18 @@ Create a deployer out of that container, setting the expected environment variab
 [source, bash]
 ----
 riff core deployer creata http-source --container-ref http-source-container \
-   --env OUTPUTS=<gateway>/<topic> \
-   --env OUTPUT_CONTENT_TYPES=<content-type>
+   --env OUTPUTS=/orders=franz-kafka-gateway-bqgp2.default:6565/default_orders,/q=franz-kafka-gateway-bqgp2.default:6565/default_quotes \
+   --env OUTPUT_CONTENT_TYPES=application/json,text/xml
 ----
 
 Then the source can be exposed (_e.g._ with a port-forward) and invoked with
 [source, bash]
 ----
-curl http://<host>:<port>/ -HContent-Type:<content-type> -v -d <data>
+curl http://<host>:<port>/orders -HContent-Type:application/json -v -d <data>
 ----
+to send data to the `orders` stream and with
+[source, bash]
+----
+curl http://<host>:<port>/q -HContent-Type:text/xml -v -d <data>
+----
+to send to the `quotes` stream.
