@@ -30,8 +30,6 @@ Assuming both "orders" and "quotes" streams exist and have already been created:
 [source, bash]
 ----
 riff streaming stream list
-
-riff streaming stream list
 NAME     TOPIC            GATEWAY                                  PROVIDER                  CONTENT-TYPE       STATUS   AGE
 orders   default_orders   franz-kafka-gateway-bqgp2.default:6565   franz-kafka-provisioner   application/json   Ready    8d
 quotes   default_quotes   franz-kafka-gateway-bqgp2.default:6565   franz-kafka-provisioner   text/xml           Ready    8d
@@ -48,7 +46,7 @@ riff container create http-source-container --image <image>
 Create a deployer out of that container, setting the expected environment variables:
 [source, bash]
 ----
-riff core deployer creata http-source --container-ref http-source-container \
+riff core deployer create http-source --container-ref http-source-container \
    --env OUTPUTS=/orders=franz-kafka-gateway-bqgp2.default:6565/default_orders,/q=franz-kafka-gateway-bqgp2.default:6565/default_quotes \
    --env OUTPUT_CONTENT_TYPES=application/json,text/xml
 ----
@@ -58,7 +56,7 @@ Then the source can be exposed (_e.g._ with a port-forward) and invoked with
 ----
 curl http://<host>:<port>/orders -HContent-Type:application/json -v -d <data>
 ----
-to send data to the `orders` stream and with
+to send data to the `orders` stream, and with
 [source, bash]
 ----
 curl http://<host>:<port>/q -HContent-Type:text/xml -v -d <data>
