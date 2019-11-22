@@ -3,9 +3,10 @@ package pkg
 import (
 	"context"
 	"fmt"
-	client "github.com/projectriff/stream-client-go"
 	"net/http"
 	"strings"
+
+	client "github.com/projectriff/stream-client-go"
 )
 
 const mimeTypeOctetStream = "application/octet-stream"
