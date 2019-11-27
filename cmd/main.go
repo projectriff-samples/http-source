@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/projectriff-samples/http-source/pkg"
 	"os"
 	"strings"
+
+	"github.com/projectriff-samples/http-source/pkg"
 )
 
 func main() {
@@ -28,9 +29,9 @@ func main() {
 	}
 }
 
-func requireEnvVars(vars... string) {
+func requireEnvVars(vars ...string) {
 	for _, v := range vars {
-		if _, set := os.LookupEnv(v) ; !set {
+		if _, set := os.LookupEnv(v); !set {
 			panic(fmt.Sprintf("Required environment variable %q not set", v))
 		}
 	}
