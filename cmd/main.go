@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/projectriff-samples/http-source/pkg"
+	"github.com/projectriff/http-source/pkg"
 )
 
 func main() {
