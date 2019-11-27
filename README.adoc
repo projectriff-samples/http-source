@@ -7,7 +7,7 @@ and sending messages to output stream(s) configured _via_ environment variables.
 Having a working go 1.13+ installation and ko[https://github.com/google/ko] installed, simply run
 [source, bash]
 ----
-ko publish github.com/projectriff-samples/http-source/cmd
+ko publish github.com/projectriff/http-source/cmd
 ----
 
 This will publish an image whose coordinates should be noted down for further use, `<image>` below.

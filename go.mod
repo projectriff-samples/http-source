@@ -1,4 +1,4 @@
-module github.com/projectriff-samples/http-source
+module github.com/projectriff/http-source
 
 go 1.13
 

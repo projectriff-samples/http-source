@@ -14,7 +14,7 @@ test: fmt vet ## Run tests
 
 .PHONY: compile
 compile: ko fmt vet ## Compile target binaries
-	$(KO) publish -P -L github.com/projectriff-samples/http-source/cmd
+	$(KO) publish -P -L github.com/projectriff/http-source/cmd
 
 # Run go fmt against code
 .PHONY: fmt
