@@ -1,0 +1,70 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: http-source
+spec:
+  selector:
+    matchLabels:
+      app: http-source
+  template:
+    metadata:
+      labels:
+        app: http-source
+    spec:
+      containers:
+      - env:
+        - name: OUTPUTS
+          value: "/foo=output_0000,/bar=output_0001,/other-foo=output_0000,/same-stream=output_0002"
+        - name: CNB_BINDINGS
+          value: "/some-root"
+        image: github.com/projectriff/http-source/cmd
+        name: http-source
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+          - name: out-stream-binding-secret
+            mountPath: "/some-root/output_0000/secret"
+            readOnly: true
+          - name: out2-stream-binding-secret
+            mountPath: "/some-root/output_0001/secret"
+            readOnly: true
+          - name: out-stream-binding-secret
+            mountPath: "/some-root/output_0002/secret"
+            readOnly: true
+          - name: out-stream-binding-metadata
+            mountPath: "/some-root/output_0000/metadata"
+            readOnly: true
+          - name: out2-stream-binding-metadata
+            mountPath: "/some-root/output_0001/metadata"
+            readOnly: true
+          - name: out-stream-binding-metadata
+            mountPath: "/some-root/output_0002/metadata"
+            readOnly: true
+      volumes:
+        - name: out-stream-binding-secret
+          secret:
+            secretName: out-stream-binding-secret
+        - name: out2-stream-binding-secret
+          secret:
+            secretName: out2-stream-binding-secret
+        - name: out-stream-binding-metadata
+          configMap:
+            name: out-stream-binding-metadata
+        - name: out2-stream-binding-metadata
+          configMap:
+            name: out2-stream-binding-metadata
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-source
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: http-source
+  type: ClusterIP

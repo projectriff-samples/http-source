@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	client "github.com/projectriff/stream-client-go"
@@ -16,14 +17,14 @@ type source struct {
 	mappings map[string]*client.StreamClient
 }
 
-func NewSource(outputs []string, contentTypes []string) (*source, error) {
+func NewSource(bindingsDir string, outputs []string) (*source, error) {
 	m := http.NewServeMux()
 
 	clients := make(map[string]*client.StreamClient, len(outputs))
-	for i, stream := range outputs {
-		if path, gw, topic, err := parseStreamRefMapping(stream); err != nil {
+	for _, mapping := range outputs {
+		if path, binding, err := parseStreamRefMapping(mapping); err != nil {
 			return nil, err
-		} else if c, err := client.NewStreamClient(gw, topic, contentTypes[i]); err != nil {
+		} else if c, err := client.NewStreamClientFromBinding(filepath.Join(bindingsDir, binding)); err != nil {
 			return nil, err
 		} else {
 			clients[path] = c
@@ -39,18 +40,13 @@ func NewSource(outputs []string, contentTypes []string) (*source, error) {
 	return &s, nil
 }
 
-func parseStreamRefMapping(output string) (path string, gw string, topic string, err error) {
-	parts := strings.SplitN(output, "=", 2)
+func parseStreamRefMapping(mapping string) (path string, binding string, err error) {
+	parts := strings.SplitN(mapping, "=", 2)
 	if len(parts) != 2 {
-		return "", "", "", fmt.Errorf("malformed stream reference mapping, expecting <path>=<gateway>/<topic>: %q", output)
+		return "", "", fmt.Errorf("malformed stream reference mapping, expecting <path>=<binding>: %q", mapping)
 	}
 	path = parts[0]
-	parts = strings.Split(parts[1], "/")
-	if len(parts) != 2 {
-		return "", "", "", fmt.Errorf("malformed stream reference mapping, expecting <path>=<gateway>/<topic>: %q", output)
-	}
-	gw = parts[0]
-	topic = parts[1]
+	binding = parts[1]
 	return
 }
 
@@ -71,6 +67,8 @@ func handler(client *client.StreamClient) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = fmt.Fprintf(w, "Error publishing to stream: %v", err)
 			return
+		} else {
+			_, _ = fmt.Printf("Successfully wrote to stream at %s/%s\n", client.Gateway, client.TopicName)
 		}
 		w.WriteHeader(http.StatusAccepted)
 	}
